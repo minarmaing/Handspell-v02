@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 # --- THE MAGIC STEP ---
 # Build argument to dynamically inject your bucket name
 ARG BUCKET_NAME
+ENV BUCKET_NAME=$BUCKET_NAME
 # Download the entire models folder from GCS straight into the container image
 RUN gsutil -m cp -r gs://${BUCKET_NAME}/models /code/models
 
