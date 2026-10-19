@@ -1,17 +1,17 @@
 steps:
-  # Step 1: Download your models folder from GCS directly into a local directory using secure defaults
+  # Step 0: Download the models directory components reliably into the working path
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['-m', 'cp', '-r', 'gs://${_BUCKET_NAME}/models', './models']
+    args: ['-m', 'cp', '-r', 'gs://${_BUCKET_NAME}/models', '.']
 
-  # Step 2: Build the container image using Docker, embedding the models folder we just downloaded
+  # Step 1: Build the container image using Docker
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/handspell-api', '.']
 
-  # Step 3: Push the compiled container image out to your project's Artifact Registry
+  # Step 2: Push the compiled container image out to your project's Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/handspell-api']
 
-  # Step 4: Deploy the container directly onto Cloud Run
+  # Step 3: Deploy the container directly onto Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'gcloud'
     args:
