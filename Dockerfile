@@ -3,7 +3,7 @@ FROM python:3.10-slim
 WORKDIR /code
 
 # Install system utilities and Google Cloud CLI
-RUN apt-get update && apt-get install -y curl gnupg && \
+RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg && \
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://google.com cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     curl https://google.com | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
     apt-get update && apt-get install -y google-cloud-cli && \
@@ -19,6 +19,6 @@ ENV BUCKET_NAME=$BUCKET_NAME
 # Download the entire models folder from GCS straight into the container image
 RUN gsutil -m cp -r gs://${BUCKET_NAME}/models /code/models
 
-COPY ./app /code/app
+COPY ./landmark_api.py /code/landmark_api.py
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+CMD ["sh", "-c", "uvicorn landmark_api:app --host 0.0.0.0 --port ${PORT:-8080}"]
