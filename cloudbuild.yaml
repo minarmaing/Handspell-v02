@@ -1,5 +1,5 @@
 steps:
-  # Step 0: Download the models directory components reliably into the working path
+  # Step 0: Download the models directory from your bucket directly into the build environment
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ['-m', 'cp', '-r', 'gs://${_BUCKET_NAME}/models', '.']
 
@@ -12,7 +12,7 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/handspell-api']
 
   # Step 3: Deploy the container directly onto Cloud Run
-  - name: 'gcr.io/cloud-builders/gcloud'
+  - name: 'gcr.io/://google.com'
     entrypoint: 'gcloud'
     args:
       - 'run'
