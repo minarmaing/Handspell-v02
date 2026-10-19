@@ -1,20 +1,28 @@
-FROM python:3.10-slim
+FROM python:3.12-slim-bookworm
 
 WORKDIR /code
 
-# Install your app dependencies
-COPY ./requirements-landmark.txt /code/requirements-landmark.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements-landmark.txt
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
 
-# Bring over the model directory (pre-downloaded by Cloud Build)
-COPY ./models /code/models
+# Native dependencies for MediaPipe, OpenCV and XGBoost.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgles2 \
+        libegl1 \
+        libgl1 \
+        libglib2.0-0 \
+        libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
-#COPY models/hand_landmarker.task ./models/
-#COPY models/handspell_xgboost_v1.json ./models/
-#COPY models/handspell_xgboost_v1_metadata.json ./models/
+COPY requirements-landmark.txt .
 
-# Bring over your API execution script logic
-COPY local_landmark_api.py .
+RUN pip install --no-cache-dir -r requirements-landmark.txt
 
-# Boot the web application server
-CMD ["sh", "-c", "uvicorn landmark_api:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# Files downloaded into models/ by Cloud Build.
+COPY models/ ./models/
+
+COPY local_landmark_api.py ./landmark_api.py
+
+CMD ["sh", "-c", "exec python -m uvicorn landmark_api:app --host 0.0.0.0 --port \"$PORT\""]
