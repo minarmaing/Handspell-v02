@@ -1,7 +1,16 @@
 steps:
-  # Step 0: Download the models directory from your bucket directly into the build environment
+  # Step 0: Create a local models folder and download your files from the bucket root
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['-m', 'cp', '-r', 'gs://${_BUCKET_NAME}/models', '.']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        mkdir -p ./models
+        gsutil cp gs://${_BUCKET_NAME}/handspell_xgboost_v1.json ./models/
+        gsutil cp gs://${_BUCKET_NAME}/handspell_xgboost_v1_metadata.json ./models/
+        gsutil cp gs://${_BUCKET_NAME}/hand_landmarker.task ./models/
+        echo "Successfully fetched models from bucket root:"
+        ls -la ./models/
 
   # Step 1: Build the container image using Docker
   - name: 'gcr.io/cloud-builders/docker'
