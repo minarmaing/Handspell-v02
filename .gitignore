@@ -39,7 +39,6 @@ data/
 data/
 
 # Saved models
-models/
 *.joblib
 *.h5
 *.pt
