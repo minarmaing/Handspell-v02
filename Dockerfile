@@ -14,7 +14,7 @@ COPY ./models /code/models
 #COPY models/handspell_xgboost_v1_metadata.json ./models/
 
 # Bring over your API execution script logic
-COPY ./landmark_api.py /code/landmark_api.py
+COPY local_landmark_api.py .
 
 # Boot the web application server
 CMD ["sh", "-c", "uvicorn landmark_api:app --host 0.0.0.0 --port ${PORT:-8080}"]
