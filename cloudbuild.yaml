@@ -21,7 +21,7 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/handspell-api']
 
   # Step 3: Deploy the container directly onto Cloud Run
-  - name: 'gcr.io/://google.com'
+  - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'gcloud'
     args:
       - 'run'
