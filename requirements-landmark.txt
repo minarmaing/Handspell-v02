@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-multipart
+mediapipe
+xgboost-cpu
+scikit-learn
+pillow
+numpy
