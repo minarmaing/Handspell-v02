@@ -18,7 +18,7 @@ steps:
 
   # Step 2: Push the compiled container image out to your project's Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/handspell-api']
+    args: ['push', 'gcr.io/$PROJECT_ID/handspell-api-v2']
 
   # Step 3: Deploy the container directly onto Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -26,9 +26,9 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'handspell-landmarks-asl-api'
+      - 'handspell-api-v2'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/handspell-api'
+      - 'gcr.io/$PROJECT_ID/handspell-api-v2'
       - '--region'
       - 'europe-west1'
       - '--allow-unauthenticated'
