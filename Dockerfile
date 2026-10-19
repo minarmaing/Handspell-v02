@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl gnupg && \
     apt-get update && apt-get install -y google-cloud-cli && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /code/requirements.txt
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./requirements-landmark.txt /code/requirements-landmark.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements-landmark.txt
 
 # --- THE MAGIC STEP ---
 # Build argument to dynamically inject your bucket name
