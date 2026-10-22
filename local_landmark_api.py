@@ -10,7 +10,6 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image, ImageOps, UnidentifiedImageError
 from xgboost import XGBClassifier
 
-
 MODEL_DIR = Path(__file__).resolve().parent / "models"
 MAX_FILE_BYTES = 10 * 1024 * 1024
 
@@ -18,15 +17,11 @@ MAX_FILE_BYTES = 10 * 1024 * 1024
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     metadata = json.loads(
-        (MODEL_DIR / "handspell_xgboost_v1_metadata.json").read_text(
-            encoding="utf-8"
-        )
+        (MODEL_DIR / "handspell_xgboost_v1_metadata.json").read_text(encoding="utf-8")
     )
 
     classifier = XGBClassifier()
-    classifier.load_model(
-        str(MODEL_DIR / "handspell_xgboost_v1.json")
-    )
+    classifier.load_model(str(MODEL_DIR / "handspell_xgboost_v1.json"))
 
     options = mp.tasks.vision.HandLandmarkerOptions(
         base_options=mp.tasks.BaseOptions(
@@ -38,9 +33,7 @@ async def lifespan(app: FastAPI):
         min_hand_presence_confidence=0.5,
     )
 
-    with mp.tasks.vision.HandLandmarker.create_from_options(
-        options
-    ) as landmarker:
+    with mp.tasks.vision.HandLandmarker.create_from_options(options) as landmarker:
         app.state.classifier = classifier
         app.state.landmarker = landmarker
         app.state.letters = metadata["letters"]
@@ -61,12 +54,8 @@ def read_rgb(contents):
     # Same image preparation as the training notebook.
     with Image.open(BytesIO(contents)) as original:
         oriented = ImageOps.exif_transpose(original).convert("RGBA")
-        background = Image.new(
-            "RGBA", oriented.size, (255, 255, 255, 255)
-        )
-        image = Image.alpha_composite(
-            background, oriented
-        ).convert("RGB")
+        background = Image.new("RGBA", oriented.size, (255, 255, 255, 255))
+        image = Image.alpha_composite(background, oriented).convert("RGB")
 
         image.thumbnail(
             (1024, 1024),
@@ -88,10 +77,7 @@ def get_features(rgb, landmarker):
         return None
 
     points = np.array(
-        [
-            [point.x, point.y, point.z]
-            for point in result.hand_landmarks[0]
-        ],
+        [[point.x, point.y, point.z] for point in result.hand_landmarks[0]],
         dtype=np.float32,
     )
 
@@ -152,10 +138,25 @@ def predict(file: UploadFile = File(...)):
             )
 
         scores = app.state.classifier.predict_proba(features)[0]
-        best_index = int(np.argmax(scores))
-        class_id = int(app.state.classifier.classes_[best_index])
+        # Rank candidates from highest to lowest score.
+        top_indices = np.argsort(scores)[::-1][:3]
 
-    return {
-        "prediction": app.state.letters[class_id],
-        "confidence": float(scores[best_index]),
-    }
+        top_candidates = []
+
+        for index in top_indices:
+            class_id = int(app.state.classifier.classes_[index])
+
+            top_candidates.append(
+                {
+                    "letter": app.state.letters[class_id],
+                    "confidence": float(scores[index]),
+                }
+            )
+
+        best = top_candidates[0]
+
+        return {
+            "prediction": best["letter"],
+            "confidence": best["confidence"],
+            "top_candidates": top_candidates,
+        }
